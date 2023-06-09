@@ -1,6 +1,4 @@
-
 class TopSpinState:
-
     def __init__(self, state, k=4):
         self.k = k
         self.state = state
@@ -15,6 +13,10 @@ class TopSpinState:
         # 3 neighbours: left rotate, right rotate, and k flip
         l_rotate = self.state[1:] + [self.state[0]]
         r_rotate = [self.state[-1]] + self.state[:-1]
-        k_flip = self.state[:self.k][::-1] + self.state[self.k:]
+        k_flip = self.state[: self.k][::-1] + self.state[self.k :]
 
-        return [TopSpinState(l_rotate,self.k), TopSpinState(r_rotate,self.k), TopSpinState(k_flip,self.k)]
+        return [
+            (TopSpinState(l_rotate, self.k), 1),
+            (TopSpinState(r_rotate, self.k), 1),
+            (TopSpinState(k_flip, self.k), 1),
+        ]

@@ -34,21 +34,20 @@ class AdvanceHeuristic:
 
 
 class LearnedHeuristic:
-
     def __init__(self, n=11, k=4):
         self._n = n
         self._k = k
         input_shape = (n,)
 
         self._model = Sequential()
-        self._model.add(Dense(64, activation='relu', input_shape=input_shape))
+        self._model.add(Dense(64, activation="relu", input_shape=input_shape))
         self._model.add(Dropout(0.25))
-        self._model.add(Dense(32, activation='relu'))
+        self._model.add(Dense(32, activation="relu"))
         self._model.add(Dropout(0.25))
-        self._model.add(Dense(16, activation='relu'))
-        self._model.add(Dense(1, activation='linear'))
+        self._model.add(Dense(16, activation="relu"))
+        self._model.add(Dense(1, activation="linear"))
 
-        self._model.compile(loss='mse', optimizer='adam')
+        self._model.compile(loss="mse", optimizer="adam")
 
         # don't forget to load the model after you trained it
 
@@ -62,7 +61,7 @@ class LearnedHeuristic:
         self._model.fit(input_as_list, output_labels, epochs=epochs)
 
     def save_model(self):
-        self._model.save_weights('models/learned_heuristic.h5')
+        self._model.save_weights("models/learned_heuristic.h5")
 
     def load_model(self):
-        self._model.load_weights('models/learned_heuristic.h5')
+        self._model.load_weights("models/learned_heuristic.h5")
