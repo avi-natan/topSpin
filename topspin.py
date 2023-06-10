@@ -16,7 +16,7 @@ class TopSpinState:
         k_flip = self.state[: self.k][::-1] + self.state[self.k :]
 
         return [
-            (TopSpinState(l_rotate, self.k), 1),
-            (TopSpinState(r_rotate, self.k), 1),
-            (TopSpinState(k_flip, self.k), 1),
+            TopSpinState(l_rotate, self.k),
+            TopSpinState(r_rotate, self.k),
+            TopSpinState(k_flip, self.k),
         ]
