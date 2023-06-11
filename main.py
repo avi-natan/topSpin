@@ -48,25 +48,35 @@ n = 8
 k = 4
 m = 100
 instance_generator = InstanceGenerator(n,k)
-random_instance = instance_generator.generate_instance(m)
-start = TopSpinState(random_instance, k)
 base_heuristic = BaseHeuristic(n, k)
 adva_heuristic = AdvanceHeuristic(n, k)
 
-heuristics = [('Base Heuristic', base_heuristic), ('Advanced Heuristic',adva_heuristic)]
+heuristics = [('Base Heuristic', base_heuristic, []), ('Advanced Heuristic',adva_heuristic, [])]
+
+instances_num = 50
+for i in range(instances_num):
+    random_instance = instance_generator.generate_instance(m)
+    start = TopSpinState(random_instance, k)
+
+    for heuristic in heuristics:
+        start_time = datetime.now()
+        path, expansions = search(start, f_priority, heuristic[1].get_h_value)
+        end_time = datetime.now()
+        delta = end_time - start_time
+
+        print(heuristic[0])
+        print(f'time to finish: {delta}')
+
+        heuristic[2].append(delta.total_seconds())
+
+        if path is not None:
+            print(expansions)
+            for vertex in path:
+                print(vertex.get_state_as_list())
+        else:
+            print("unsolvable")
 
 for heuristic in heuristics:
-    start_time = datetime.now()
-    path, expansions = search(start, f_priority, heuristic[1].get_h_value)
-    end_time = datetime.now()
-    delta = end_time - start_time
-
-    print(heuristic[0])
-    print(f'time to finish: {delta}')
-
-    if path is not None:
-        print(expansions)
-        for vertex in path:
-            print(vertex.get_state_as_list())
-    else:
-        print("unsolvable")
+    print(f'heuristic: {heuristic[0]}')
+    print(f'runtimes: {heuristic[2]}')
+    print(f'average: {sum(heuristic[2]) / instances_num}')

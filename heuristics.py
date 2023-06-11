@@ -37,14 +37,28 @@ class AdvanceHeuristic:
         #
         # return h
 
-        state_as_list = state.get_state_as_list()
-        h = abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1)))
-        for i, tile in enumerate(state_as_list[:self._k]):
-            h += abs(tile - i + 1)
-        # h = abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1)))
-        # h = abs(abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1))) - abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1))))
+        # state_as_list = state.get_state_as_list()
+        # h = abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1)))
+        # for i, tile in enumerate(state_as_list[:self._k]):
+        #     h += abs(tile - i + 1)
+        # h += abs(state_as_list[0] - state_as_list[-1])
+        # # h = abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1)))
+        # # h = abs(abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1))) - abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1))))
 
-        return h
+        state_as_list = state.get_state_as_list()
+        gap = 0
+
+        if state_as_list[0] != 1:
+            gap = 1
+
+        for i in range(len(state_as_list) - 1):
+            if abs(state_as_list[i] - state_as_list[i + 1]) != 1:
+                gap += 2
+
+        if abs(state_as_list[0] - state_as_list[-1]) != self._n-1 or abs(state_as_list[0] - state_as_list[-1]) != 1:
+            gap += 1
+
+        return gap
 
 
 class LearnedHeuristic:
