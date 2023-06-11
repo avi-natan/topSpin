@@ -33,8 +33,9 @@ def search(start, priority_function, heuristic_function):
     # while Q is not empty
     while len(priority_queue) > 0:
         # debug prints - length of open list
-        print(len(priority_queue))
-        print('\n')
+        if len(priority_queue) % 100 == 0:
+            print(len(priority_queue))
+        # print('\n')
 
         # get the state with the highest priority
         pr, g, na, path_to, state, state_as_list = heapq.heappop(priority_queue)
