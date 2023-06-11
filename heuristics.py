@@ -28,14 +28,21 @@ class AdvanceHeuristic:
         self._k = k
 
     def get_h_value(self, state):
-        # this heuristics counts the combined distance of the tiles to their goal position
-        state_as_list = state.get_state_as_list()
-        h = 0
+        # # this heuristics counts the combined distance of the tiles to their goal position
+        # state_as_list = state.get_state_as_list()
+        # h = 0
+        #
+        # for i, tile in enumerate(state_as_list[:self._k]):
+        #     h += abs(tile - i + 1)
+        #
+        # return h
 
+        state_as_list = state.get_state_as_list()
+        h = abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1)))
         for i, tile in enumerate(state_as_list[:self._k]):
             h += abs(tile - i + 1)
-
-        # for i in range(self._n):
+        # h = abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1)))
+        # h = abs(abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1))) - abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1))))
 
         return h
 
