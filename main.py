@@ -3,7 +3,7 @@ from datetime import datetime
 
 from heuristics import BaseHeuristic, AdvanceHeuristic
 from instances import InstanceGenerator
-from priorities import f_priority
+from priorities import f_priority, fw_priority, h_priority
 from search import search
 from topspin import TopSpinState
 
@@ -51,23 +51,31 @@ instance_generator = InstanceGenerator(n,k)
 base_heuristic = BaseHeuristic(n, k)
 adva_heuristic = AdvanceHeuristic(n, k)
 
-heuristics = [('Base Heuristic', base_heuristic, []), ('Advanced Heuristic',adva_heuristic, [])]
+algs_and_heuristics = [
+    ('A* basic', f_priority, base_heuristic, [], []),
+    ('A* advanced', f_priority, adva_heuristic, [], []),
+    ('WA* basic', fw_priority(0.1), base_heuristic, [], []),
+    ('WA* advanced', fw_priority(0.1), adva_heuristic, [], []),
+    ('GBFS basic', h_priority, base_heuristic, [], []),
+    ('GBFS advanced', h_priority, adva_heuristic, [], [])
+]
 
 instances_num = 50
 for i in range(instances_num):
     random_instance = instance_generator.generate_instance(m)
     start = TopSpinState(random_instance, k)
 
-    for heuristic in heuristics:
+    for a_and_h in algs_and_heuristics:
         start_time = datetime.now()
-        path, expansions = search(start, f_priority, heuristic[1].get_h_value)
+        path, expansions = search(start, a_and_h[1], a_and_h[2].get_h_value)
         end_time = datetime.now()
         delta = end_time - start_time
 
-        print(heuristic[0])
+        print(a_and_h[0])
         print(f'time to finish: {delta}')
 
-        heuristic[2].append(delta.total_seconds())
+        a_and_h[3].append(delta.total_seconds())
+        a_and_h[4].append(expansions)
 
         if path is not None:
             print(expansions)
@@ -76,7 +84,9 @@ for i in range(instances_num):
         else:
             print("unsolvable")
 
-for heuristic in heuristics:
-    print(f'heuristic: {heuristic[0]}')
-    print(f'runtimes: {heuristic[2]}')
-    print(f'average: {sum(heuristic[2]) / instances_num}')
+for a_and_h in algs_and_heuristics:
+    print(f'heuristic: {a_and_h[0]}')
+    print(f'runtimes: {a_and_h[3]}')
+    print(f'average runtime: {sum(a_and_h[3]) / instances_num}')
+    print(f'expansions: {a_and_h[4]}')
+    print(f'average expansions: {sum(a_and_h[4]) / instances_num}')
