@@ -52,12 +52,12 @@ base_heuristic = BaseHeuristic(n, k)
 adva_heuristic = AdvanceHeuristic(n, k)
 
 algs_and_heuristics = [
-    ('A* basic', f_priority, base_heuristic, [], []),
-    ('A* advanced', f_priority, adva_heuristic, [], []),
-    ('WA* basic', fw_priority(0.1), base_heuristic, [], []),
-    ('WA* advanced', fw_priority(0.1), adva_heuristic, [], []),
-    ('GBFS basic', h_priority, base_heuristic, [], []),
-    ('GBFS advanced', h_priority, adva_heuristic, [], [])
+    ('A* basic', f_priority, base_heuristic, [], [], []),
+    ('A* advanced', f_priority, adva_heuristic, [], [], []),
+    ('WA* basic', fw_priority(5), base_heuristic, [], [], []),
+    ('WA* advanced', fw_priority(5), adva_heuristic, [], [], []),
+    ('GBFS basic', h_priority, base_heuristic, [], [], []),
+    ('GBFS advanced', h_priority, adva_heuristic, [], [], [])
 ]
 
 instances_num = 50
@@ -75,7 +75,8 @@ for i in range(instances_num):
         print(f'time to finish: {delta}')
 
         a_and_h[3].append(delta.total_seconds())
-        a_and_h[4].append(expansions)
+        a_and_h[4].append(len(path)) if path is not None else a_and_h[4].append(-1)
+        a_and_h[5].append(expansions)
 
         if path is not None:
             print(expansions)
@@ -88,5 +89,8 @@ for a_and_h in algs_and_heuristics:
     print(f'heuristic: {a_and_h[0]}')
     print(f'runtimes: {a_and_h[3]}')
     print(f'average runtime: {sum(a_and_h[3]) / instances_num}')
-    print(f'expansions: {a_and_h[4]}')
-    print(f'average expansions: {sum(a_and_h[4]) / instances_num}')
+    print(f'path lengths: {a_and_h[4]}')
+    print(f'average path lengths: {sum(a_and_h[4]) / instances_num}')
+    print(f'expansions: {a_and_h[5]}')
+    print(f'average expansions: {sum(a_and_h[5]) / instances_num}')
+    print(f'number of cases solved: {len(list(filter(lambda a: a != -1, a_and_h[4])))}/{instances_num}')
