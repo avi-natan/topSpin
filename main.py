@@ -63,7 +63,6 @@ for i, state in enumerate(input_data):
 lear_heuristic.load_model()
 lear_heuristic.train_model(input_data, output_labels, 100)
 lear_heuristic.save_model()
-lear_heuristic.load_model()
 
 algs_and_heuristics = [
     ('A*', 'basic', f_priority, base_heuristic, [], [], []),
@@ -77,7 +76,7 @@ algs_and_heuristics = [
     ('GBFS', 'learned', h_priority, lear_heuristic, [], [], [])
 ]
 
-instances_num = 5
+instances_num = 50
 for i in range(instances_num):
     print(f'instance number {i+1}')
     random_instance = instance_generator.generate_instance(m)
