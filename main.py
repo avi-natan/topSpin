@@ -1,7 +1,9 @@
 import random
 from datetime import datetime
 
-from heuristics import BaseHeuristic, AdvanceHeuristic
+import xlsxwriter
+
+from heuristics import BaseHeuristic, AdvanceHeuristic, LearnedHeuristic
 from instances import InstanceGenerator
 from priorities import f_priority, fw_priority, h_priority
 from search import search
@@ -44,39 +46,55 @@ from topspin import TopSpinState
 #     print("unsolvable")
 
 ########################## pipeline ############################
-n = 8
+n = 11
 k = 4
 m = 100
 instance_generator = InstanceGenerator(n,k)
 base_heuristic = BaseHeuristic(n, k)
 adva_heuristic = AdvanceHeuristic(n, k)
+lear_heuristic = LearnedHeuristic(n, k)
+
+input_data_as_list = [instance_generator.generate_instance(random.randint(1, K+1)) for K in range(10000)]
+input_data = list(map(lambda state_as_list: TopSpinState(state_as_list, k), input_data_as_list))
+output_labels = []
+for i, state in enumerate(input_data):
+    output_labels.append(adva_heuristic.get_h_value(state))
+    print(f'========================================== {i}')
+lear_heuristic.load_model()
+lear_heuristic.train_model(input_data, output_labels, 100)
+lear_heuristic.save_model()
+lear_heuristic.load_model()
 
 algs_and_heuristics = [
-    ('A* basic', f_priority, base_heuristic, [], [], []),
-    ('A* advanced', f_priority, adva_heuristic, [], [], []),
-    ('WA* basic', fw_priority(5), base_heuristic, [], [], []),
-    ('WA* advanced', fw_priority(5), adva_heuristic, [], [], []),
-    ('GBFS basic', h_priority, base_heuristic, [], [], []),
-    ('GBFS advanced', h_priority, adva_heuristic, [], [], [])
+    ('A*', 'basic', f_priority, base_heuristic, [], [], []),
+    ('A*', 'advanced', f_priority, adva_heuristic, [], [], []),
+    ('A*', 'learned', f_priority, lear_heuristic, [], [], []),
+    ('WA*', 'basic', fw_priority(5), base_heuristic, [], [], []),
+    ('WA*', 'advanced', fw_priority(5), adva_heuristic, [], [], []),
+    ('WA*', 'learned', fw_priority(5), lear_heuristic, [], [], []),
+    ('GBFS', 'basic', h_priority, base_heuristic, [], [], []),
+    ('GBFS', 'advanced', h_priority, adva_heuristic, [], [], []),
+    ('GBFS', 'learned', h_priority, lear_heuristic, [], [], [])
 ]
 
-instances_num = 50
+instances_num = 5
 for i in range(instances_num):
+    print(f'instance number {i+1}')
     random_instance = instance_generator.generate_instance(m)
     start = TopSpinState(random_instance, k)
 
     for a_and_h in algs_and_heuristics:
         start_time = datetime.now()
-        path, expansions = search(start, a_and_h[1], a_and_h[2].get_h_value)
+        path, expansions = search(start, a_and_h[2], a_and_h[3].get_h_value)
         end_time = datetime.now()
         delta = end_time - start_time
 
-        print(a_and_h[0])
+        print(f'{a_and_h[0]} {a_and_h[1]}')
         print(f'time to finish: {delta}')
 
-        a_and_h[3].append(delta.total_seconds())
-        a_and_h[4].append(len(path)) if path is not None else a_and_h[4].append(-1)
-        a_and_h[5].append(expansions)
+        a_and_h[4].append(delta.total_seconds())
+        a_and_h[5].append(len(path)) if path is not None else a_and_h[5].append(-1)
+        a_and_h[6].append(expansions)
 
         if path is not None:
             print(expansions)
@@ -85,12 +103,37 @@ for i in range(instances_num):
         else:
             print("unsolvable")
 
+results_data = []
 for a_and_h in algs_and_heuristics:
-    print(f'heuristic: {a_and_h[0]}')
-    print(f'runtimes: {a_and_h[3]}')
-    print(f'average runtime: {sum(a_and_h[3]) / instances_num}')
-    print(f'path lengths: {a_and_h[4]}')
-    print(f'average path lengths: {sum(a_and_h[4]) / instances_num}')
-    print(f'expansions: {a_and_h[5]}')
-    print(f'average expansions: {sum(a_and_h[5]) / instances_num}')
-    print(f'number of cases solved: {len(list(filter(lambda a: a != -1, a_and_h[4])))}/{instances_num}')
+    print(f'algorithm: {a_and_h[0]}, heuristic: {a_and_h[1]}')
+    print(f'runtimes: {a_and_h[4]}')
+    print(f'average runtime: {sum(a_and_h[4]) / instances_num}')
+    print(f'path lengths: {a_and_h[5]}')
+    print(f'average path lengths: {sum(a_and_h[5]) / instances_num}')
+    print(f'expansions: {a_and_h[6]}')
+    print(f'average expansions: {sum(a_and_h[6]) / instances_num}')
+    print(f'number of cases solved: {len(list(filter(lambda a: a != -1, a_and_h[5])))}/{instances_num}')
+
+    record = [
+        a_and_h[0],
+        a_and_h[1],
+        sum(a_and_h[4]) / instances_num,
+        sum(a_and_h[5]) / instances_num,
+        sum(a_and_h[6]) / instances_num,
+        f'{len(list(filter(lambda a: a != -1, a_and_h[5])))}/{instances_num}'
+    ]
+    results_data.append(record)
+
+columns = [
+    {'header': 'algorithm'},
+    {'header': 'heuristic'},
+    {'header': 'average runtime'},
+    {'header': 'average path lengths'},
+    {'header': 'average expansions'},
+    {'header': 'number of cases solved'}
+]
+
+workbook = xlsxwriter.Workbook('results_topspin.xlsx')
+worksheet = workbook.add_worksheet('results')
+worksheet.add_table(0, 0, len(results_data), len(columns)-1, {'data': results_data, 'columns': columns})
+workbook.close()

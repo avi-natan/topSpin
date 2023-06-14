@@ -50,7 +50,9 @@ def search(start, priority_function, heuristic_function):
 
         # for each successor of state
         j = 0
-        for successor in successors:
+        for successor_tuple in successors:
+            successor = successor_tuple[0]
+            successor_cost = successor_tuple[1]
             successor_as_list = successor.get_state_as_list()
             if successor_as_list in close_list:
                 continue
@@ -59,7 +61,7 @@ def search(start, priority_function, heuristic_function):
 
             # if successor is not in priority_queue
             if index == -1:
-                new_g = g + 1
+                new_g = g + successor_cost
                 priority = get_priority(new_g, successor)
                 heapq.heappush(
                     priority_queue,
@@ -67,7 +69,7 @@ def search(start, priority_function, heuristic_function):
                 )
             # else if successor is in priority_queue with a lower g
             else:
-                new_g = g + 1
+                new_g = g + successor_cost
                 if priority_queue[index][1] > new_g:
                     priority = get_priority(new_g, successor)
                     priority_queue.pop(index)
@@ -80,6 +82,6 @@ def search(start, priority_function, heuristic_function):
 
         i += 1
         evaluation += 1
-        close_list.append(state.get_state_as_list())
+        close_list.append(state_as_list)
 
     return (None, 0)
