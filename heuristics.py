@@ -1,6 +1,11 @@
+import random
+
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 import numpy as np
+
+from instances import InstanceGenerator
+from topspin import TopSpinState
 
 
 class BaseHeuristic:
@@ -28,23 +33,6 @@ class AdvanceHeuristic:
         self._k = k
 
     def get_h_value(self, state):
-        # # this heuristics counts the combined distance of the tiles to their goal position
-        # state_as_list = state.get_state_as_list()
-        # h = 0
-        #
-        # for i, tile in enumerate(state_as_list[:self._k]):
-        #     h += abs(tile - i + 1)
-        #
-        # return h
-
-        # state_as_list = state.get_state_as_list()
-        # h = abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1)))
-        # for i, tile in enumerate(state_as_list[:self._k]):
-        #     h += abs(tile - i + 1)
-        # h += abs(state_as_list[0] - state_as_list[-1])
-        # # h = abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1)))
-        # # h = abs(abs(sum(state_as_list[self._k:]) - sum(range(self._k, self._n+1))) - abs(sum(state_as_list[:self._k]) - sum(range(1, self._k + 1))))
-
         state_as_list = state.get_state_as_list()
         gap = 0
 
@@ -53,9 +41,12 @@ class AdvanceHeuristic:
 
         for i in range(len(state_as_list) - 1):
             if abs(state_as_list[i] - state_as_list[i + 1]) != 1:
-                gap += 2
+                gap += self._k
 
         if abs(state_as_list[0] - state_as_list[-1]) != self._n-1 or abs(state_as_list[0] - state_as_list[-1]) != 1:
+            gap += 2
+
+        if abs(state_as_list[0] - state_as_list[self._k]) != self._k or abs(state_as_list[0] - state_as_list[self._k]) != 1:
             gap += 1
 
         return gap
@@ -78,6 +69,23 @@ class LearnedHeuristic:
         self._model.compile(loss="mse", optimizer="adam")
 
         # don't forget to load the model after you trained it
+        try:
+            self.load_model()
+        except Exception as e:
+            pass
+
+        adva_heuristic = AdvanceHeuristic(n, k)
+        instance_generator = InstanceGenerator(n,k)
+        input_data_as_list = [instance_generator.generate_instance(random.randint(1, K + 1)) for K in range(10000)]
+        input_data = list(map(lambda state_as_list: TopSpinState(state_as_list, k), input_data_as_list))
+        output_labels = []
+        for i, state in enumerate(input_data):
+            output_labels.append(adva_heuristic.get_h_value(state))
+            print(f'========================================== {i}')
+
+        self.train_model(input_data, output_labels, 100)
+        self.save_model()
+
 
     def get_h_value(self, state):
         state = np.array(state.get_state_as_list())

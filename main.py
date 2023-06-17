@@ -54,16 +54,6 @@ base_heuristic = BaseHeuristic(n, k)
 adva_heuristic = AdvanceHeuristic(n, k)
 lear_heuristic = LearnedHeuristic(n, k)
 
-input_data_as_list = [instance_generator.generate_instance(random.randint(1, K+1)) for K in range(10000)]
-input_data = list(map(lambda state_as_list: TopSpinState(state_as_list, k), input_data_as_list))
-output_labels = []
-for i, state in enumerate(input_data):
-    output_labels.append(adva_heuristic.get_h_value(state))
-    print(f'========================================== {i}')
-lear_heuristic.load_model()
-lear_heuristic.train_model(input_data, output_labels, 100)
-lear_heuristic.save_model()
-
 algs_and_heuristics = [
     ('A*', 'basic', f_priority, base_heuristic, [], [], []),
     ('A*', 'advanced', f_priority, adva_heuristic, [], [], []),
