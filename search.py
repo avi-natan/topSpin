@@ -11,22 +11,27 @@ def calculate_priority(priority_function, heuristic_function):
 
 
 def get_state_index(states, target_state):
-    """Returns the index of the target_state in the priority_queue"""
-    for index, state in enumerate(states):
-        if state[5] == target_state:
-            return index
-    return -1  # Return -1 if not found
+    """Returns the index of the target_state in the states list"""
+    try:
+        index = [state[5] for state in states].index(target_state)
+        return index
+    except ValueError:
+        return -1  # Return -1 if not found
 
 
 def search(start, priority_function, heuristic_function):
     # easy function to calculate the priority of a node
     get_priority = calculate_priority(priority_function, heuristic_function)
 
-    close_list = []
+    close_list = set()
 
     # put the start node in the queue
-    priority_queue = []  # list of tuples (priority, g, Nan, path_to, state, state_as_list)
-    heapq.heappush(priority_queue, (0, 0, 0, [start], start, start.get_state_as_list()))
+    priority_queue = (
+        []
+    )  # list of tuples (priority, g, Nan, path_to, state, state_as_list)
+    heapq.heappush(
+        priority_queue, (0, 0, 0, [start], start, tuple(start.get_state_as_list()))
+    )
 
     i = 0
     evaluation = 0
@@ -53,7 +58,7 @@ def search(start, priority_function, heuristic_function):
         for successor_tuple in successors:
             successor = successor_tuple[0]
             successor_cost = successor_tuple[1]
-            successor_as_list = successor.get_state_as_list()
+            successor_as_list = tuple(successor.get_state_as_list())
             if successor_as_list in close_list:
                 continue
 
@@ -65,7 +70,14 @@ def search(start, priority_function, heuristic_function):
                 priority = get_priority(new_g, successor)
                 heapq.heappush(
                     priority_queue,
-                    (priority, new_g, i * 10 + j, path_to + [successor], successor, successor_as_list),
+                    (
+                        priority,
+                        new_g,
+                        i * 10 + j,
+                        path_to + [successor],
+                        successor,
+                        successor_as_list,
+                    ),
                 )
             # else if successor is in priority_queue with a lower g
             else:
@@ -75,13 +87,20 @@ def search(start, priority_function, heuristic_function):
                     priority_queue.pop(index)
                     heapq.heappush(
                         priority_queue,
-                        (priority, new_g, i * 10 + j, path_to + [successor], successor, successor_as_list),
+                        (
+                            priority,
+                            new_g,
+                            i * 10 + j,
+                            path_to + [successor],
+                            successor,
+                            successor_as_list,
+                        ),
                     )
 
             j += 1
 
         i += 1
         evaluation += 1
-        close_list.append(state_as_list)
+        close_list.add(tuple(state_as_list))
 
     return (None, 0)
