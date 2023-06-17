@@ -55,7 +55,7 @@ adva_heuristic = AdvanceHeuristic(n, k)
 lear_heuristic = LearnedHeuristic(n, k)
 
 algs_and_heuristics = [
-    ('A*', 'basic', f_priority, base_heuristic, [], [], []),
+    # ('A*', 'basic', f_priority, base_heuristic, [], [], []),
     ('A*', 'advanced', f_priority, adva_heuristic, [], [], []),
     ('A*', 'learned', f_priority, lear_heuristic, [], [], []),
     ('WA*', 'basic', fw_priority(5), base_heuristic, [], [], []),

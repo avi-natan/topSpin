@@ -60,9 +60,9 @@ class LearnedHeuristic:
 
         self._model = Sequential()
         self._model.add(Dense(64, activation="relu", input_shape=input_shape))
-        self._model.add(Dropout(0.25))
+        self._model.add(Dropout(0.05))
         self._model.add(Dense(32, activation="relu"))
-        self._model.add(Dropout(0.25))
+        self._model.add(Dropout(0.05))
         self._model.add(Dense(16, activation="relu"))
         self._model.add(Dense(1, activation="linear"))
 
@@ -76,7 +76,7 @@ class LearnedHeuristic:
 
         adva_heuristic = AdvanceHeuristic(n, k)
         instance_generator = InstanceGenerator(n,k)
-        input_data_as_list = [instance_generator.generate_instance(random.randint(1, K + 1)) for K in range(10000)]
+        input_data_as_list = [instance_generator.generate_instance(random.randint(1, K + 1)) for K in range(100000)]
         input_data = list(map(lambda state_as_list: TopSpinState(state_as_list, k), input_data_as_list))
         output_labels = []
         for i, state in enumerate(input_data):
