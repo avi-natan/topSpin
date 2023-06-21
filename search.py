@@ -1,4 +1,22 @@
 import heapq
+import hashlib
+import json
+
+
+def generate_unique_hash(data):
+    # Convert the list to bytes
+    data_bytes = json.dumps(data).encode("utf-8")
+
+    # Create a new SHA-256 hash object
+    hash_object = hashlib.sha256()
+
+    # Update the hash object with the data bytes
+    hash_object.update(data_bytes)
+
+    # Get the hexadecimal representation of the hash
+    unique_hash = hash_object.hexdigest()
+
+    return unique_hash
 
 
 def calculate_priority(priority_function, heuristic_function):
@@ -10,62 +28,63 @@ def calculate_priority(priority_function, heuristic_function):
     return priority
 
 
-def get_state_index(states, target_state):
-    """Returns the index of the target_state in the states list"""
-    try:
-        index = [state[5] for state in states].index(target_state)
-        return index
-    except ValueError:
-        return -1  # Return -1 if not found
-
-
 def search(start, priority_function, heuristic_function):
-    # easy function to calculate the priority of a node
+    # Easy function to calculate the priority of a node
     get_priority = calculate_priority(priority_function, heuristic_function)
 
     close_list = set()
+    priority_queue = []  # Dictionary to store states and their priorities
 
-    # put the start node in the queue
-    priority_queue = (
-        []
-    )  # list of tuples (priority, g, Nan, path_to, state, state_as_list)
+    # Put the start node in the queue
+    start_state_list = start.get_state_as_list()
+    start_state_hash = generate_unique_hash(start_state_list)
     heapq.heappush(
-        priority_queue, (0, 0, 0, [start], start, tuple(start.get_state_as_list()))
+        priority_queue,
+        (
+            0,
+            0,
+            0,
+            (None, start),
+            start,
+            start_state_hash,
+        ),
     )
 
     i = 0
     evaluation = 0
-    # while Q is not empty
-    while len(priority_queue) > 0:
-        # debug prints - length of open list
-        if len(priority_queue) % 100 == 0:
-            print(len(priority_queue))
-        # print('\n')
-
-        # get the state with the highest priority
+    # While the priority queue is not empty
+    while priority_queue:
+        # Get the state with the highest priority
         pr, g, na, path_to, state, state_as_list = heapq.heappop(priority_queue)
 
-        # if state is the goal node
+        # If state is the goal node
         if state.is_goal():
-            # return n
-            return (path_to, evaluation)
+            # Return the path and evaluation
+            path = []
+            while path_to is not None:
+                path.insert(0, path_to[1])
+                path_to = path_to[0]
+            return (path, evaluation)
 
-        # generate state's successors
+        # Generate state's successors
         successors = state.get_neighbors()
 
-        # for each successor of state
+        # Check if the state has been visited before
+        if state_as_list in close_list:
+            continue
+
+        # Add the state to the close list
+        close_list.add(state_as_list)
+
+        # For each successor of state
         j = 0
         for successor_tuple in successors:
             successor = successor_tuple[0]
             successor_cost = successor_tuple[1]
-            successor_as_list = tuple(successor.get_state_as_list())
-            if successor_as_list in close_list:
-                continue
+            successor_as_list = generate_unique_hash(successor.get_state_as_list())
 
-            index = get_state_index(priority_queue, successor_as_list)
-
-            # if successor is not in priority_queue
-            if index == -1:
+            # Check if successor is in the priority queue
+            if successor_as_list not in priority_queue:
                 new_g = g + successor_cost
                 priority = get_priority(new_g, successor)
                 heapq.heappush(
@@ -74,33 +93,27 @@ def search(start, priority_function, heuristic_function):
                         priority,
                         new_g,
                         i * 10 + j,
-                        path_to + [successor],
+                        (path_to, successor),
                         successor,
                         successor_as_list,
                     ),
                 )
-            # else if successor is in priority_queue with a lower g
-            else:
+            # If successor is in priority_queue with a lower g
+            elif priority_queue[successor_as_list][1] > g + successor_cost:
                 new_g = g + successor_cost
-                if priority_queue[index][1] > new_g:
-                    priority = get_priority(new_g, successor)
-                    priority_queue.pop(index)
-                    heapq.heappush(
-                        priority_queue,
-                        (
-                            priority,
-                            new_g,
-                            i * 10 + j,
-                            path_to + [successor],
-                            successor,
-                            successor_as_list,
-                        ),
-                    )
+                priority = get_priority(new_g, successor)
+                priority_queue[successor_as_list] = (
+                    priority,
+                    new_g,
+                    i * 10 + j,
+                    (path_to, successor),
+                    successor,
+                    successor_as_list,
+                )
 
             j += 1
 
         i += 1
         evaluation += 1
-        close_list.add(tuple(state_as_list))
 
     return (None, 0)
